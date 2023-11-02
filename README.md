@@ -51,3 +51,13 @@ Other environment agnostic settings can be changed in `config/app.php`.
 The app skeleton uses [Milligram](https://milligram.io/) (v1.3) minimalist CSS
 framework by default. You can, however, replace it with any other library or
 custom styles.
+
+
+## Scaffold clientes
+```shell
+bin/cake bake migration CreateClientes nome:string[120] telefone:string[25] email:string[255] endereco:text
+bin/cake migrations migrate
+bin/cake bake model Clientes --fields "id:integer,nome:string[120],telefone:string[25],email:string[255],endereco:text"
+bin/cake bake controller Clientes
+bin/cake bake template Clientes
+```
