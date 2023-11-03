@@ -54,8 +54,29 @@ class ErrorController extends AppController
     public function beforeRender(EventInterface $event)
     {
         parent::beforeRender($event);
+    
+        // Configura o cabeçalho para 'Content-Type: application/json'
+        $this->response = $this->response->withType('application/json');
 
-        $this->viewBuilder()->setTemplatePath('Error');
+        // Define o status da resposta HTTP, por exemplo, 500 para erro interno do servidor
+        $this->response = $this->response->withStatus(500);
+
+        // Envia os cabeçalhos para o navegador
+        foreach ($this->response->getHeaders() as $key => $value) {
+            header($key . ': ' . implode(', ', $value));
+        }
+
+        // Envia o status HTTP
+        http_response_code($this->response->getStatusCode());
+        
+        // Define os dados do erro
+        $error = [
+            'message' => 'Erro interno do servidor.',
+            'code' => 500,
+        ];
+        
+        echo json_encode($error);
+        die;
     }
 
     /**

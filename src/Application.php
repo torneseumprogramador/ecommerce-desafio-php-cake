@@ -28,6 +28,25 @@ use Cake\ORM\Locator\TableLocator;
 use Cake\Routing\Middleware\AssetMiddleware;
 use Cake\Routing\Middleware\RoutingMiddleware;
 
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+
+class CorsMiddleware implements MiddlewareInterface
+{
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
+    {
+        $response = $handler->handle($request);
+        return $response
+            ->withHeader('Access-Control-Allow-Origin', '*')
+            ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS')
+            ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
+            ->withHeader('Access-Control-Expose-Headers', 'Authorization, authenticated')
+            ->withHeader('Access-Control-Allow-Credentials', 'true');
+    }
+}
+
 /**
  * Application setup class.
  *
@@ -85,11 +104,7 @@ class Application extends BaseApplication
             // https://book.cakephp.org/4/en/controllers/middleware.html#body-parser-middleware
             ->add(new BodyParserMiddleware())
 
-            // Cross Site Request Forgery (CSRF) Protection Middleware
-            // https://book.cakephp.org/4/en/security/csrf.html#cross-site-request-forgery-csrf-middleware
-            ->add(new CsrfProtectionMiddleware([
-                'httponly' => true,
-            ]));
+            ->add(new CorsMiddleware());
 
         return $middlewareQueue;
     }

@@ -49,34 +49,58 @@ return function (RouteBuilder $routes): void {
      */
     $routes->setRouteClass(DashedRoute::class);
 
-    $routes->scope('/', function (RouteBuilder $builder): void {
-        /*
-         * Here, we are connecting '/' (base path) to a controller called 'Pages',
-         * its action called 'display', and we pass a param to select the view file
-         * to use (in this case, templates/Pages/home.php)...
-         */
-        $builder->connect('/', ['controller' => 'Home', 'action' => 'index', 'home']);
+    $routes->connect('/', ['controller' => 'Home', 'action' => 'index']);
 
-        /*
-         * ...and connect the rest of 'Pages' controller's URLs.
-         */
-        $builder->connect('/pages/*', 'Home::index');
+    $routes->connect('/api', ['controller' => 'Home', 'action' => 'index']);
 
-        /*
-         * Connect catchall routes for all controllers.
-         *
-         * The `fallbacks` method is a shortcut for
-         *
-         * ```
-         * $builder->connect('/{controller}', ['action' => 'index']);
-         * $builder->connect('/{controller}/{action}/*', []);
-         * ```
-         *
-         * You can remove these routes once you've connected the
-         * routes you want in your application.
-         */
-        $builder->fallbacks();
+    // $routes->connect('/api/clientes', ['controller' => 'Clientes', 'action' => 'index'])->setMethods(['GET']);
+    // $routes->connect('/api/clientes/{id}', ['controller' => 'Clientes', 'action' => 'view'])->setMethods(['GET'])->setPatterns(['id' => '\d+'])->setPass(['id']);
+    // $routes->connect('/api/clientes', ['controller' => 'Clientes', 'action' => 'add'])->setMethods(['POST']);
+    // $routes->connect('/api/clientes/{id}', ['controller' => 'Clientes', 'action' => 'edit'])->setMethods(['PUT', 'PATCH'])->setPatterns(['id' => '\d+'])->setPass(['id']);
+    // $routes->connect('/api/clientes/{id}', ['controller' => 'Clientes', 'action' => 'delete'])->setMethods(['DELETE'])->setPatterns(['id' => '\d+'])->setPass(['id']);
+
+
+    $routes->scope('/api', function (RouteBuilder $builder): void {
+        $builder->setExtensions(['json']);
+
+        // $builder->resources('Clientes'); // Define rotas de recursos RESTful para Clientes
+
+        $builder->connect('/clientes', ['controller' => 'Clientes', 'action' => 'index'])->setMethods(['GET']);
+        $builder->connect('/clientes/{id}', ['controller' => 'Clientes', 'action' => 'view'])->setMethods(['GET'])->setPatterns(['id' => '\d+'])->setPass(['id']);
+        $builder->connect('/clientes', ['controller' => 'Clientes', 'action' => 'add'])->setMethods(['POST']);
+        $builder->connect('/clientes/{id}', ['controller' => 'Clientes', 'action' => 'edit'])->setMethods(['PUT', 'PATCH'])->setPatterns(['id' => '\d+'])->setPass(['id']);
+        $builder->connect('/clientes/{id}', ['controller' => 'Clientes', 'action' => 'delete'])->setMethods(['DELETE'])->setPatterns(['id' => '\d+'])->setPass(['id']);
     });
+
+    // $routes->scope('/', function (RouteBuilder $builder): void {
+    //     $builder->setExtensions(['json']);
+
+    //     $builder->connect('/', ['controller' => 'Home', 'action' => 'index', 'home']);
+        
+    //     $builder->scope('/api', function (RouteBuilder $builderApi): void {
+    //         $builderApi->setExtensions(['json']);
+    //         $builderApi->connect('/', ['controller' => 'Home', 'action' => 'index', 'home']);
+
+    //         $builderApi->resources('Clientes'); // Define rotas de recursos RESTful para Clientes
+    //     });
+
+    //     $builder->connect('/pages/*', 'Home::index');
+
+    //     /*
+    //      * Connect catchall routes for all controllers.
+    //      *
+    //      * The `fallbacks` method is a shortcut for
+    //      *
+    //      * ```
+    //      * $builder->connect('/{controller}', ['action' => 'index']);
+    //      * $builder->connect('/{controller}/{action}/*', []);
+    //      * ```
+    //      *
+    //      * You can remove these routes once you've connected the
+    //      * routes you want in your application.
+    //      */
+    //     $builder->fallbacks();
+    // });
 
     /*
      * If you need a different set of middleware or none at all,

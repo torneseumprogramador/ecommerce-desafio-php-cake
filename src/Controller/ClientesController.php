@@ -40,7 +40,10 @@ class ClientesController extends AppController
 
         $clientes = $this->paginate($query);
 
-        $this->set(compact('clientes'));
+        $response = $this->response->withType('application/json')
+            ->withStringBody(json_encode($clientes));
+        
+        return $response;
     }
 
     /**
@@ -52,8 +55,20 @@ class ClientesController extends AppController
      */
     public function view($id = null)
     {
-        $cliente = $this->Clientes->get($id, contain: []);
-        $this->set(compact('cliente'));
+        $cliente = $this->Clientes->find()->where(['id' => $id])->first();
+
+        if(isset($cliente)){
+            $response = $this->response->withType('application/json')
+                ->withStringBody(json_encode($cliente));
+        }
+        else{
+            $response = $this->response->withType('application/json')
+                ->withStringBody(json_encode([
+                    "mensagem" => "Cliente não encontrado"
+                ]))->withStatus(404);
+        }
+        
+        return $response;
     }
 
     /**
@@ -65,17 +80,17 @@ class ClientesController extends AppController
     {
         $cliente = $this->Clientes->newEmptyEntity();
         if ($this->request->is('post')) {
-
             $cliente = $this->Clientes->patchEntity($cliente, $this->request->getData());
-
             if ($this->Clientes->save($cliente)) {
-                $this->Flash->success(__('Cliente incluido com sucesso.'));
-
-                return $this->redirect(['action' => 'index']);
+                return $this->response->withType('application/json')->withStringBody(json_encode($cliente))->withStatus(201);
             }
-            $this->Flash->error(__('O cliente não pode ser salvo, verifique se você passou os campos como nome, email e telefone no formulário'));
         }
-        $this->set(compact('cliente'));
+        
+        return $this->response->withType('application/json')
+            ->withStringBody(json_encode([
+                "mensagem" => 'O cliente não pode ser salvo, verifique se você passou os campos como nome, email e telefone no formulário'
+                ]))
+            ->withStatus(400);
     }
 
     /**
@@ -87,17 +102,27 @@ class ClientesController extends AppController
      */
     public function edit($id = null)
     {
-        $cliente = $this->Clientes->get($id, contain: []);
-        if ($this->request->is(['patch', 'post', 'put'])) {
+        $cliente = $this->Clientes->find()->where(['id' => $id])->first();
+
+        if(!isset($cliente)){
+            return $this->response->withType('application/json')
+                ->withStringBody(json_encode([
+                    "mensagem" => "Cliente não encontrado"
+                ]))->withStatus(404);
+        }
+
+        if ($this->request->is(['patch', 'put'])) {
             $cliente = $this->Clientes->patchEntity($cliente, $this->request->getData());
             if ($this->Clientes->save($cliente)) {
-                $this->Flash->success(__('Cliente alterado com sucesso.'));
-
-                return $this->redirect(['action' => 'index']);
+                return $this->response->withType('application/json')->withStringBody(json_encode($cliente))->withStatus(200);
             }
-            $this->Flash->error(__('O cliente não pode ser salvo, por favor tente novamente.'));
         }
-        $this->set(compact('cliente'));
+
+        return $this->response->withType('application/json')
+            ->withStringBody(json_encode([
+                "mensagem" => 'O cliente não pode ser salvo, verifique se você passou os campos como nome, email e telefone no formulário'
+            ]))
+            ->withStatus(400);
     }
 
     /**
@@ -109,14 +134,28 @@ class ClientesController extends AppController
      */
     public function delete($id = null)
     {
-        $this->request->allowMethod(['post', 'delete']);
-        $cliente = $this->Clientes->get($id);
-        if ($this->Clientes->delete($cliente)) {
-            $this->Flash->success(__('Cliente apagado com sucesso.'));
-        } else {
-            $this->Flash->error(__('Ops. não deu para apagar o cliente'));
+        $this->request->allowMethod(['delete']);
+
+        $cliente = $this->Clientes->find()->where(['id' => $id])->first();
+
+        if(isset($cliente)){
+            if ($this->Clientes->delete($cliente)) {
+                $response = $this->response->withStatus(204)->withStringBody(json_encode([]));
+                return $response;
+            }
+            else{
+                $mensagem = "Ops. não deu para apagar o cliente";
+            }
+        }
+        else{
+            $mensagem = "Cliente de ID: $id não foi encontrado";
         }
 
-        return $this->redirect(['action' => 'index']);
+        $response = $this->response->withType('application/json')
+            ->withStringBody(json_encode([
+                "mensagem" => $mensagem
+            ]))->withStatus(400);
+        
+        return $response;
     }
 }
